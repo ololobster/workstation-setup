@@ -1,0 +1,12 @@
+#!/bin/bash
+# Updates the last commit.
+
+set -e
+
+last_commit=`git log -n 1 --pretty='format:%s'`
+if echo "${last_commit}" | grep -i -q merge
+then
+    echo 'It seems the last commit is a merge. Doing nothing.'
+    exit 1
+fi
+git commit --amend -a -m "${last_commit}"

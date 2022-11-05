@@ -1,0 +1,25 @@
+---
+- name: dev stuff
+  apt:
+    pkg:
+      - cmake
+      - extra-cmake-modules
+      - g++
+      - git
+      - gitk
+      - pkg-config
+    state: latest
+
+- name: Git settings
+  command: "{{ item }}"
+  with_items:
+    - git config --global user.email georgiy@sgibnev.com
+    - git config --global user.name 'Georgiy Sgibnev'
+    - git config --global init.defaultBranch main
+  become: false
+
+- name: create the al script (amend last)
+  copy:
+    src: al
+    dest: /usr/bin
+    mode: 0555

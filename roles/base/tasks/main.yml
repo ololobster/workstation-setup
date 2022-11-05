@@ -1,0 +1,71 @@
+# Base settings.
+---
+- name: set /bin/sh to Bash
+  file:
+    path: /bin/sh
+    src: /bin/bash
+    state: link
+
+- name: check a SSH-key
+  stat:
+    path: ~/.ssh/id_rsa
+  register: ssh_key_probe
+  become: false
+
+- name: create a SSH-key
+  command: ssh-keygen -q -t rsa -N '' -f ~/.ssh/id_rsa
+  become: false
+  when: not ssh_key_probe.stat.exists
+
+- name: useful utils
+  apt:
+    pkg:
+      - aptitude
+      - curl
+      - ffmpegthumbs
+      - htop
+      - kolourpaint
+      - krusader
+      - mate-terminal
+      - mc
+      - net-tools
+      - python3-pip
+      - rsync
+      - simplescreenrecorder
+      - smplayer
+      - vim
+    state: latest
+
+- name: mark md-files as text for Firefox
+  copy:
+    dest: ~/.mime.types
+    content: text/plain     md txt
+  become: false
+
+- name: привязка медиа-файлов к smplayer
+  ini_file:
+    path: ~/.config/mimeapps.list
+    section: Default Applications
+    option: "{{ item }}"
+    value: smplayer.desktop;
+    state: present
+  with_items:
+    - audio/mp3
+    - video/mp4
+    - video/mpeg
+    - video/x-matroska
+    - video/webm
+  become: false
+
+# - name: krusader settingas
+#   copy:
+#     dest: ~/.config/krusaderrc
+#     content: |
+#       Config Version=1
+#       First Time=true
+#       Version=2.7.2
+#
+#       [Colors]
+#       Current Background=39,9,127
+#       Current Foreground=
+#   become: false
