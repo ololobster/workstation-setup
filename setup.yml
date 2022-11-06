@@ -2,7 +2,8 @@
   become_method: sudo
   become: true
   roles:
-    - base
-    - dev
+    # - base
+    # - dev
+    - krusader
     # - sublime_text
     # - libreoffice
