@@ -34,6 +34,7 @@
       - simplescreenrecorder
       - smplayer
       - vim
+      - virt-manager
     state: latest
 
 - name: mark md-files as text for Firefox
@@ -57,15 +58,4 @@
     - video/webm
   become: false
 
-# - name: krusader settingas
-#   copy:
-#     dest: ~/.config/krusaderrc
-#     content: |
-#       Config Version=1
-#       First Time=true
-#       Version=2.7.2
-#
-#       [Colors]
-#       Current Background=39,9,127
-#       Current Foreground=
-#   become: false
+- include: krusader.yml

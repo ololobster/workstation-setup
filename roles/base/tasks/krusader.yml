@@ -1,0 +1,31 @@
+---
+- name: Krusader config file
+  copy:
+    dest: ~/.config/krusaderrc
+    content: |
+      First Time=false
+      Version=2.7.2
+
+      [Colors]
+      Alternate Marked Background=
+      Background=
+      Current Background=75,177,255
+      KDE Default=false
+      Marked Background=Background
+      Marked Current Foreground=255,0,0
+      Marked Foreground=255,0,0
+
+      [Startup]
+      Show Cmd Line=false
+      Show FN Keys=false
+      Show status bar=false
+
+      [Look&Feel]
+      Mouse Selection=3
+      Rename Selects Extension=false
+      Show Hidden=false
+
+      [Custom Selection Mode]
+      Left Selects=false
+      Right Selects=false
+  become: false
