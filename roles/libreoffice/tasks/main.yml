@@ -1,0 +1,10 @@
+---
+- name: Python macro engine for LibreOffice
+  apt:
+    pkg: libreoffice-script-provider-python
+    state: latest
+
+- name: install the NewRow macro
+  copy:
+    src: NewRow.py
+    dest: /usr/lib/libreoffice/share/Scripts/python
