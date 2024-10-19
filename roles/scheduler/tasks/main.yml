@@ -1,0 +1,6 @@
+# Simple scheduler.
+---
+- name: install scheduler.py
+  copy:
+    src: scheduler.py
+    dest: /usr/bin
