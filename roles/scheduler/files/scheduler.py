@@ -12,11 +12,14 @@
 # $ scheduler.py clean
 
 import argparse
+from datetime import timedelta
+import json
 from pathlib import Path
-import pty
+import os
 import shutil
 import subprocess
 import sys
+import time
 
 DEFAULT_TARGET_DIR = '/tmp/scheduler'
 RUN_COMMAND = 'run'
@@ -24,32 +27,31 @@ REPORT_COMMAND = 'report'
 CLEAN_COMMAND = 'clean'
 
 
-def run_job(args):
-    target_dir_path = Path(DEFAULT_TARGET_DIR)
-    output_dir_path = target_dir_path / 'output'
+def run_job(args, target_dir_path: Path):
     if not target_dir_path.is_dir():
         target_dir_path.mkdir()
+    output_dir_path = target_dir_path / 'output'
     if not output_dir_path.is_dir():
         output_dir_path.mkdir()
-    rc_file_path = target_dir_path / args.name
+    rc_file_path = target_dir_path / (args.name + '.json')
     if rc_file_path.exists():
         print('Fail. Clean first.')
         sys.exit(1)
 
-    # master_fd, slave_fd = pty.openpty()
     subprocess_kwargs = {'shell': True}
     if not args.without_logs:
         log_file_path = output_dir_path / args.name
         log_file = open(log_file_path, 'w')
         subprocess_kwargs['stdout'] = log_file
         subprocess_kwargs['stderr'] = log_file
+    start = time.time()
     rc = subprocess.call(args.job, **subprocess_kwargs)
+    end = time.time()
     with open(rc_file_path, 'w') as rc_file:
-        rc_file.write(str(rc))
+        json.dump({'rc': rc, 'term': int(end - start)}, rc_file)
     print(f'Job {args.name} is finished.')
 
-def print_report(args):
-    target_dir_path = Path(DEFAULT_TARGET_DIR)
+def print_report(args, target_dir_path: Path):
     if not target_dir_path.is_dir():
         print('Fail. Run some jobs first.')
         sys.exit(1)
@@ -59,19 +61,21 @@ def print_report(args):
     for rc_file_path in target_dir_path.iterdir():
         if not rc_file_path.is_file():
             continue
-        job_name = rc_file_path.name
-        rc = rc_file_path.read_text()
-        if rc == '0':
+        with open(rc_file_path, 'r') as rc_file:
+            report = json.load(rc_file)
+        rc = report['rc']
+        term = timedelta(seconds=report['term'])
+        job_name = rc_file_path.stem
+        if rc == 0:
             success_count += 1
-            print(f'{job_name}: success.')
+            print(f'{job_name}: success in {term}.')
         else:
             fail_count +=1
-            print(f'{job_name}: fail (return code {rc}).')
+            print(f'{job_name}: fail in {term} (return code {rc}).')
     print(f'Success: {success_count}, fail: {fail_count}.')
 
 
-def clean_target_dir(args):
-    target_dir_path = Path(DEFAULT_TARGET_DIR)
+def clean_target_dir(args, target_dir_path: Path):
     if target_dir_path.is_dir():
         shutil.rmtree(target_dir_path)
     print('Cleaning was finished.')
@@ -87,10 +91,14 @@ if __name__ == '__main__':
     report_parser = subparsers.add_parser(REPORT_COMMAND, help='Print a report')
     clean_parser = subparsers.add_parser(CLEAN_COMMAND, help='Clean the logs')
     args = parser.parse_args()
+    target_dir_path = Path(os.environ.get('SCHEDULER_DIR', DEFAULT_TARGET_DIR))
 
     if args.command == RUN_COMMAND:
-        run_job(args)
+        run_job(args, target_dir_path)
     elif args.command == REPORT_COMMAND:
-        print_report(args)
+        print_report(args, target_dir_path)
     elif args.command == CLEAN_COMMAND:
-        clean_target_dir(args)
+        clean_target_dir(args, target_dir_path)
+    else:
+        print('Unknown command.')
+        sys.exit(1)
