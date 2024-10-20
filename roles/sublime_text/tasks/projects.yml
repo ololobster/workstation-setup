@@ -1,0 +1,20 @@
+---
+- name: create the projects directory
+  file:
+    path: ~/.config/sublime-projects
+    state: directory
+  become: false
+
+- name: create the project files
+  copy:
+    dest: "~/.config/sublime-projects/{{ item.key }}.sublime-project"
+    content: |
+      {
+        "folders": [
+          {
+            "path": "{{ item.value }}"
+          }
+        ]
+      }
+  with_dict: "{{ sublime_projects }}"
+  become: false

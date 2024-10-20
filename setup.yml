@@ -4,6 +4,7 @@
   roles:
     # - base
     # - dev
-    - krusader
-    # - sublime_text
+    # - krusader
+    - sublime_text
     # - libreoffice
+    # - scheduler

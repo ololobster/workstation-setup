@@ -71,3 +71,5 @@
           {"keys": ["alt+c"], "command": "mark_code"}
       ]
   become: false
+
+- include: projects.yml
